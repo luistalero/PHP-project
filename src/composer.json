@@ -1,0 +1,23 @@
+{
+    "name": "project-php/task-manager",
+    "description": "A simple Task Manager project to learn PHP fundamentals and architecture.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Luis Talero",
+            "email": "luis.talero@wiedii.co"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php -S 0.0.0.0:8000 -t public"
+    }
+}
