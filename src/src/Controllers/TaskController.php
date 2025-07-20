@@ -9,11 +9,12 @@ use App\Models\Task; // Importamos la clase Task
 class TaskController
 {
     private View $view;
-    private TaskRepository $taskRepository; // Nueva propiedad para el repositorio
+    private TaskRepository $taskRepository; 
 
     public function __construct(TaskRepository $taskRepository) // Ahora el constructor recibe el repositorio
     {
-        $this->view = new View(__DIR__ . '/../Views'); // La ruta de la vista sigue siendo la misma
+        // La ruta de la vista se pasa aquí al constructor de View
+        $this->view = new View(__DIR__ . '/../Views'); 
         $this->taskRepository = $taskRepository; // Asignamos el repositorio
     }
 
@@ -22,14 +23,10 @@ class TaskController
      */
     public function index(): void
     {
-        $tasks = $this->taskRepository->findAll(); // Obtenemos las tareas del repositorio
+        $tasks = $this->taskRepository->findAll();
 
-        $data = [
-            'title' => 'Listado de Tareas',
-            'heading' => 'Listado de todas las tareas',
-            'tasks' => $tasks // Pasamos las tareas a la vista
-        ];
-        $this->view->render('tasks/index', $data);
+        // ¡Ahora usamos la instancia de View que ya está configurada!
+        $this->view->render('tasks/index.html.php', ['tasks' => $tasks]);
     }
 
     /**
@@ -43,7 +40,8 @@ class TaskController
 
         if (!$task) {
             http_response_code(404);
-            $this->view->render('404', ['title' => 'Tarea no encontrada', 'message' => 'La tarea solicitada no existe.']);
+            // Asegúrate de que esta vista 404.html.php exista en src/src/Views/
+            $this->view->render('404.html.php', ['title' => 'Tarea no encontrada', 'message' => 'La tarea solicitada no existe.']);
             return;
         }
 
@@ -51,6 +49,108 @@ class TaskController
             'title' => "Detalles de la Tarea #{$id}",
             'task' => $task // Pasamos la tarea a la vista
         ];
-        $this->view->render('tasks/show', $data);
+        // Asegúrate de que esta vista tasks/show.html.php exista
+        $this->view->render('tasks/show.html.php', $data);
+    }
+
+    public function create(): void
+    {
+        $this->view->render('tasks/create.html.php');
+    }
+
+    public function store(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $title = htmlspecialchars($_POST['title']);
+            $description = htmlspecialchars($_POST['description']);
+            $dueDate = htmlspecialchars($_POST['due_date']);
+    
+            if (empty($title) || empty($dueDate)) {
+                if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+                    header('Content-Type: application/json', true, 400);
+                    echo json_encode(['success' => false, 'message' => 'El título y la fecha son obligatorios.']);
+                    exit();
+                }
+                header("Location: /tasks/create");
+                exit();
+            }
+    
+            $task = new Task($title, $description, $dueDate);
+            $this->taskRepository->save($task);
+    
+            if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'task' => $task->toArray()]);
+                exit();
+            }
+        }
+
+        header("Location: /tasks");
+        exit();
+    } 
+
+    public function destroy(string $id): void
+    {
+        $this->taskRepository->delete((int)$id);
+        header("Location: /tasks");
+        exit();
+    }
+
+    public function edit(string $id): void
+    {
+        $task = $this->taskRepository->find((int)$id);
+
+        if(!$task) {
+            http_response_code(404);
+            $this->view->render('404.html.php', ['title' => 'Tarea no encontrada', 'message' => 'La tarea solicitada no existe.']);
+            return;
+        }
+
+        $data = ['task' => $task];
+        $this->view->render('tasks/edit.html.php', $data);
+    }
+
+    public function update(string $id): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $task = $this->taskRepository->find((int)$id);
+            
+            if (!$task) {
+                http_response_code(404);
+                $this->view->render('404.html.php', ['title' => 'Tarea no encontrada', 'message' => 'La tarea solicitada no existe.']);
+                return;
+            }
+
+            $task->title = htmlspecialchars($_POST['title']);
+            $task->description = htmlspecialchars($_POST['description']);
+            $task->due_date = htmlspecialchars($_POST['due_date']);
+
+            $this->taskRepository->update($task);
+        }
+
+        header("Location: /tasks/{$id}");
+        exit();
+    }
+
+    public function toggleComplete(string $id) : void {
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $task = $this->taskRepository->find((int)$id);
+    
+            if ($task) {
+                // Toggling the completed status
+                $task->completed = !$task->completed;
+                $this->taskRepository->update($task);
+            }
+    
+            if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'completed' => $task->completed]);
+                exit();
+            }
+    
+            header("Location: /tasks");
+            exit();
+        }
     }
 }
