@@ -15,9 +15,28 @@ class TaskRepository
         $this->pdo = $pdo;
     }
 
-    public function findAll(): array
+    /**
+     * Encuentra todas las tareas o las filtra por estado.
+     * @param string $filter 'all', 'completed', 'pending'
+     * @return array
+     */
+    public function findAll(string $filter = 'all'): array
     {
-        $stmt = $this->pdo->query("SELECT * FROM tasks ORDER BY created_at DESC");
+        $sql = "SELECT * FROM tasks";
+        $params = [];
+
+        if ($filter === 'completed') {
+            $sql .= " WHERE completed = 1";
+        } elseif ($filter === 'pending') {
+            $sql .= " WHERE completed = 0";
+        }
+        // Si el filtro es 'all', no se añade ninguna cláusula WHERE
+
+        $sql .= " ORDER BY created_at DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params); // Ejecutamos con los parámetros si los hay (aunque en este caso no hay, es buena práctica)
+
         $tasks = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $tasks[] = $this->hydrate($row);
@@ -41,15 +60,17 @@ class TaskRepository
     public function save(Task $task): Task
     {
         try {
-            $stmt = $this->pdo->prepare("INSERT INTO tasks (title, description, due_date, completed) VALUES (:title, :description, :due_date, :completed)");
+            $currentTimestamp = date('Y-m-d H:i:s');
+            $stmt = $this->pdo->prepare("INSERT INTO tasks (title, description, due_date, completed, created_at, updated_at) VALUES (:title, :description, :due_date, :completed, :created_at, :updated_at)");
             $stmt->execute([
                 'title' => $task->title,
                 'description' => $task->description,
                 'due_date' => $task->due_date,
-                'completed' => (int)$task->completed
+                'completed' => (int)$task->completed,
+                'created_at' => $currentTimestamp,
+                'updated_at' => $currentTimestamp
             ]);
 
-            // Obtener el ID del último insert y la tarea completa con sus timestamps
             $lastInsertId = $this->pdo->lastInsertId();
             return $this->find((int)$lastInsertId);
 
@@ -61,13 +82,19 @@ class TaskRepository
     public function update(Task $task): bool
     {
         try {
-            $stmt = $this->pdo->prepare("UPDATE tasks SET title = :title, description = :description, due_date = :due_date, completed = :completed, updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+            $completedAtValue = $task->completed ? date('Y-m-d H:i:s') : null;
+            $currentTimestamp = date('Y-m-d H:i:s');
+
+            $stmt = $this->pdo->prepare("UPDATE tasks SET title = :title, description = :description, due_date = :due_date, completed = :completed, updated_at = :updated_at, completed_at = :completed_at WHERE id = :id");
+            
             return $stmt->execute([
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
                 'due_date' => $task->due_date,
-                'completed' => (int)$task->completed
+                'completed' => (int)$task->completed,
+                'updated_at' => $currentTimestamp,
+                'completed_at' => $completedAtValue
             ]);
         } catch (PDOException $e) {
             throw new PDOException("Error al actualizar la tarea: " . $e->getMessage());

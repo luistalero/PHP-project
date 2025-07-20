@@ -10,6 +10,7 @@ require_once __DIR__ . '/../src/Controllers/TaskController.php';
 require_once __DIR__ . '/../src/Models/TaskRepository.php';
 require_once __DIR__ . '/../src/Models/Task.php';
 require_once __DIR__ . '/../src/Views/View.php';
+date_default_timezone_set('America/Bogota');
 
 Const DB_PATH = __DIR__ . '/../database.sqlite';
 $dsn = "sqlite:" . DB_PATH; 
@@ -41,10 +42,14 @@ try {
 
 $taskRepository = new TaskRepository($pdo);
 
+// Este bloque de código debería ser eliminado después de la primera ejecución
+// o manejado por un sistema de "seeds" o migraciones más robusto.
+// Lo mantengo aquí por el momento para que tu base de datos no esté vacía.
 if (count($taskRepository->findAll()) === 0) {
     $task = new App\Models\Task("Mi primera tarea", "Descripción de la primera tarea", "2025-07-25");
     $taskRepository->save($task);
 }
+
 
 $taskController = new TaskController($taskRepository);
 
@@ -66,6 +71,7 @@ $router->addRoute('GET', '/tasks', [$taskController, 'index']);
 $router->addRoute('GET', '/tasks/create', [$taskController, 'create']); 
 $router->addRoute('GET', '/tasks/{id}', [$taskController, 'show']);
 $router->addRoute('GET', '/tasks/{id}/edit', [$taskController, 'edit']);
+$router->addRoute('GET', '/api/tasks', [$taskController, 'getTasksJson']);
 
 
 $router->dispatch();

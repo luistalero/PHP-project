@@ -17,41 +17,28 @@
             </a>
         </div>
 
-        <ul class="space-y-4">
-            <?php if (empty($tasks)): ?>
-                <li class="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700">No hay tareas aún. ¡Crea una!</li>
-            <?php else: ?>
-                <?php foreach ($tasks as $task): ?>
-                    <li data-task-id="<?= htmlspecialchars($task->id) ?>" class="p-4 rounded-lg shadow-sm transition duration-150 ease-in-out <?= $task->completed ? 'bg-gray-200' : 'bg-gray-50' ?>">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-start space-x-4">
-                                <form class="toggle-complete-form" action="/tasks/<?= htmlspecialchars($task->id) ?>/toggle-complete" method="POST">
-                                    <input type="hidden" name="id" value="<?= htmlspecialchars($task->id) ?>">
-                                    <input type="checkbox" name="completed" <?= $task->completed ? 'checked' : '' ?> class="form-checkbox h-5 w-5 text-blue-600 rounded-full cursor-pointer">
-                                </form>
-                                <div class="task-content <?= $task->completed ? 'line-through text-gray-500' : 'text-gray-800' ?>">
-                                    <h2 class="text-xl font-semibold"><?= htmlspecialchars($task->title) ?></h2>
-                                    <p class="text-sm mt-1">Vence: <?= htmlspecialchars($task->due_date) ?></p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2 task-actions">
-                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>" class="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out" title="Ver detalles">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>/edit" class="edit-link text-yellow-500 hover:text-yellow-700 transition duration-300 ease-in-out <?= $task->completed ? 'hidden' : '' ?>" title="Editar tarea">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </a>
-                                <form class="delete-task-form" action="/tasks/<?= htmlspecialchars($task->id) ?>/delete" method="POST">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 transition duration-300 ease-in-out" title="Eliminar tarea">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </ul>
+        <div class="flex space-x-2 mb-6">
+            <button data-filter="all" class="filter-btn bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-400">
+                Todas
+            </button>
+            <button data-filter="pending" class="filter-btn bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-400">
+                Pendientes
+            </button>
+            <button data-filter="completed" class="filter-btn bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-400">
+                Completadas
+            </button>
+        </div>
+        
+        <ul id="tasks-list" class="space-y-4">
+            </ul>
+        
+        <div id="loading-spinner" class="hidden text-center mt-8 text-gray-500">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+        
+        <div id="no-tasks-message" class="hidden p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 mt-4">
+            No hay tareas que coincidan con este filtro.
+        </div>
     </div>
     <script src="/js/tasks.js"></script>
 
