@@ -35,14 +35,14 @@
                                 </div>
                             </div>
                             <div class="flex space-x-2 task-actions">
-                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>" class="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out <?= $task->completed ? 'hidden' : '' ?>" title="Ver detalles">
+                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>" class="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out" title="Ver detalles">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>/edit" class="text-yellow-500 hover:text-yellow-700 transition duration-300 ease-in-out <?= $task->completed ? 'hidden' : '' ?>" title="Editar tarea">
+                                <a href="/tasks/<?= htmlspecialchars($task->id) ?>/edit" class="edit-link text-yellow-500 hover:text-yellow-700 transition duration-300 ease-in-out <?= $task->completed ? 'hidden' : '' ?>" title="Editar tarea">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <form action="/tasks/<?= htmlspecialchars($task->id) ?>/delete" method="POST">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 transition duration-300 ease-in-out" title="Eliminar tarea" onclick="return confirm('¿Estás seguro de que quieres eliminar esta tarea?');">
+                                <form class="delete-task-form" action="/tasks/<?= htmlspecialchars($task->id) ?>/delete" method="POST">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 transition duration-300 ease-in-out" title="Eliminar tarea">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>

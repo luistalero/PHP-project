@@ -61,9 +61,28 @@ class TaskController
     public function store(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $title = htmlspecialchars($_POST['title']);
-            $description = htmlspecialchars($_POST['description']);
-            $dueDate = htmlspecialchars($_POST['due_date']);
+            
+            // Detectar si la solicitud es AJAX para procesar JSON
+            if (isset($_SERVER['CONTENT_TYPE']) && str_contains($_SERVER['CONTENT_TYPE'], 'application/json')) {
+                // Leer el cuerpo de la solicitud JSON
+                $json = file_get_contents('php://input');
+                $data = json_decode($json, true);
+            
+                // Validar que los datos se hayan decodificado correctamente
+                if ($data === null) {
+                    http_response_code(400);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Datos inválidos.']);
+                    exit();
+                }
+            } else {
+                // Si no es JSON, usamos los datos de $_POST (para formularios no AJAX)
+                $data = $_POST;
+            }
+
+            $title = htmlspecialchars($data['title']);
+            $description = htmlspecialchars($data['description']);
+            $dueDate = htmlspecialchars($data['due_date']);
     
             if (empty($title) || empty($dueDate)) {
                 if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
@@ -80,7 +99,7 @@ class TaskController
     
             if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'task' => $task->toArray()]);
+                echo json_encode(['success' => true, 'task' => $task->toArray(), 'message' => 'Tarea creada con éxito.']);
                 exit();
             }
         }
@@ -116,18 +135,51 @@ class TaskController
             $task = $this->taskRepository->find((int)$id);
             
             if (!$task) {
+                // Si la solicitud es AJAX, retornamos JSON
+                if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+                    header('Content-Type: application/json', true, 404);
+                    echo json_encode(['success' => false, 'message' => 'La tarea solicitada no existe.']);
+                    exit();
+                }
                 http_response_code(404);
                 $this->view->render('404.html.php', ['title' => 'Tarea no encontrada', 'message' => 'La tarea solicitada no existe.']);
                 return;
             }
 
-            $task->title = htmlspecialchars($_POST['title']);
-            $task->description = htmlspecialchars($_POST['description']);
-            $task->due_date = htmlspecialchars($_POST['due_date']);
+            // Detectar si la solicitud es AJAX para procesar JSON
+            if (isset($_SERVER['CONTENT_TYPE']) && str_contains($_SERVER['CONTENT_TYPE'], 'application/json')) {
+                // Leer el cuerpo de la solicitud JSON
+                $json = file_get_contents('php://input');
+                $data = json_decode($json, true);
+            
+                // Validar que los datos se hayan decodificado correctamente
+                if ($data === null) {
+                    http_response_code(400);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Datos inválidos.']);
+                    exit();
+                }
+            } else {
+                // Si no es JSON, usamos los datos de $_POST (para formularios no AJAX)
+                $data = $_POST;
+            }
 
+            // Actualizamos los campos de la tarea con los datos recibidos
+            $task->title = htmlspecialchars($data['title']);
+            $task->description = htmlspecialchars($data['description']);
+            $task->due_date = htmlspecialchars($data['due_date']);
+            
             $this->taskRepository->update($task);
+
+            // Si la solicitud es AJAX, retornamos una respuesta JSON
+            if (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'task' => $task->toArray()]);
+                exit();
+            }
         }
 
+        // Si la solicitud no es AJAX (envío de formulario normal), redirigimos
         header("Location: /tasks/{$id}");
         exit();
     }

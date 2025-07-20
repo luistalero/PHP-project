@@ -1,4 +1,3 @@
-
 document.querySelectorAll('.toggle-complete-form').forEach(form => {
     form.addEventListener('change', async (e) => {
         e.preventDefault();
@@ -18,26 +17,61 @@ document.querySelectorAll('.toggle-complete-form').forEach(form => {
             if (response.ok) {
                 const taskItem = form.closest('li');
                 const taskContent = taskItem.querySelector('.task-content');
-                const taskActions = taskItem.querySelector('.task-actions');
+                const editLink = taskItem.querySelector('.edit-link'); 
 
                 if (isChecked) {
                     taskItem.classList.add('bg-gray-200');
                     taskItem.classList.remove('bg-gray-50');
                     taskContent.classList.add('line-through', 'text-gray-500');
                     taskContent.classList.remove('text-gray-800');
-                    taskActions.querySelector('[title="Ver detalles"]').classList.add('hidden');
-                    taskActions.querySelector('[title="Editar tarea"]').classList.add('hidden');
+                    editLink.classList.add('hidden');
                 } else {
                     taskItem.classList.remove('bg-gray-200');
                     taskItem.classList.add('bg-gray-50');
                     taskContent.classList.remove('line-through', 'text-gray-500');
                     taskContent.classList.add('text-gray-800');
-                    taskActions.querySelector('[title="Ver detalles"]').classList.remove('hidden');
-                    taskActions.querySelector('[title="Editar tarea"]').classList.remove('hidden');
+                    editLink.classList.remove('hidden');
                 }
             }
         } catch (error) {
             console.error('Error:', error);
+        }
+    });
+});
+
+// ¡NUEVO CÓDIGO para la eliminación por AJAX!
+document.querySelectorAll('.delete-task-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Previene el envío normal del formulario
+
+        // Muestra un cuadro de confirmación
+        const userConfirmed = confirm('¿Estás seguro de que quieres eliminar esta tarea?');
+
+        // Si el usuario cancela, no hacemos nada
+        if (!userConfirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                // Enviamos el header X-HTTP-Method-Override para ser semánticamente correctos, aunque el servidor no lo use
+                headers: {
+                    'X-HTTP-Method-Override': 'DELETE',
+                },
+            });
+
+            if (response.ok) {
+                // Si la eliminación fue exitosa, eliminamos el elemento de la lista del DOM
+                const taskItem = form.closest('li');
+                taskItem.remove();
+            } else {
+                // Manejar errores si el servidor devuelve un código de error
+                alert('Hubo un problema al eliminar la tarea.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión. No se pudo eliminar la tarea.');
         }
     });
 });

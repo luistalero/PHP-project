@@ -29,6 +29,10 @@ try {
     if (!in_array('updated_at', $columns)) {
         $pdo->exec("ALTER TABLE tasks ADD COLUMN updated_at TIMESTAMP");
     }
+
+    if (!in_array('completed_at', $columns)) {
+        $pdo->exec("ALTER TABLE tasks ADD COLUMN completed_at TIMESTAMP NULL");
+    }
 } catch (PDOException $e) {
     http_response_code(500);
     echo "Error de conexión a la base de datos: " . $e->getMessage();

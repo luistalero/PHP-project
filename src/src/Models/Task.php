@@ -11,8 +11,9 @@ class Task
     public bool $completed = false;
     public ?string $created_at = null;
     public ?string $updated_at = null;
+    public ?string $completed_at = null;
 
-    public function __construct(string $title, string $description, string $dueDate, ?int $id = null, bool $completed = false,  ?string $created_at = null, ?string $updated_at = null)
+    public function __construct(string $title, string $description, string $dueDate, ?int $id = null, bool $completed = false,  ?string $created_at = null, ?string $updated_at = null, ?string $completed_at = null)
     {
         $this->id = $id;
         $this->title = $title;
@@ -21,6 +22,7 @@ class Task
         $this->completed = $completed;
         $this->created_at = $created_at;
         $this->updated_at = $updated_at;
+        $this->completed_at = $completed_at;
     }
 
     public function markAsCompleted(): void
@@ -38,6 +40,7 @@ class Task
         'completed' => (bool)$this->completed, // Convertir a booleano
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,
+        'completed_at' => $this->completed_at,
     ];
 }
 }

@@ -93,7 +93,8 @@ class TaskRepository
             (int)$data['id'],
             ($data['completed'] == 1),
             $data['created_at'],
-            $data['updated_at']
+            $data['updated_at'],
+            $data['completed_at']
         );
     }
 }
