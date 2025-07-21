@@ -73,4 +73,4 @@ Sigue estos pasos para poner en marcha el proyecto:
 * Usa el formulario para crear nuevas tareas.
 
 ---
-**Desarrollado con ❤️ por [Luis Talero]**
+**Desarrollado con ❤️ por Luis Talero**
