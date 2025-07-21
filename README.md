@@ -29,8 +29,8 @@ Sigue estos pasos para poner en marcha el proyecto:
 1. **Clona el repositorio:**
 
     ```bash
-    git clone [URL_DE_TU_REPOSITORIO]
-    cd [nombre_de_la_carpeta]
+    git clone (https://github.com/luistalero/PHP-project.git)
+    cd src
     ```
 
 2. **Construye y levanta los contenedores:**
