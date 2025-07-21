@@ -29,7 +29,7 @@ Sigue estos pasos para poner en marcha el proyecto:
 1. **Clona el repositorio:**
 
     ```bash
-    git clone (https://github.com/luistalero/PHP-project.git)
+    git clone https://github.com/luistalero/PHP-project.git
     cd src
     ```
 
